@@ -1,0 +1,45 @@
+.vote-box{
+  width:44px; height:44px; border:2px solid #111827; border-radius:.5rem;
+}
+.card{ border-radius: .75rem; }
+.badge.border{ border-color:#e0e7ff !important; background:#eef2ff !important; color:#111827; }
+
+
+.filter-link:hover {
+  background-color: #00000010;
+  border-color: #00000010;
+}
+
+.filter-link:focus {
+  background-color: #00000010;
+  border-color: #00000010;
+  outline: 0;
+  box-shadow: 0 0 0 .25rem rgba(0,0,0,.05);
+}
+
+.filter-link.active,
+.filter-link[aria-current="page"] {
+  background-color: #00000020;
+  border-color: #00000040;
+}
+
+
+.stretched-link {
+  text-decoration: none; 
+  color: inherit;
+  font-weight: 500;
+  font-size: 18px;
+}
+
+.votebox {
+  font-size: 1.1rem
+}
+
+.askme-background {
+  background-color: #00000010;
+}
+
+.pagination .page-link {
+  padding-left: 1.3rem;
+  padding-right: 1.3rem;
+}
