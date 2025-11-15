@@ -1,0 +1,24 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+<section class="col-lg-7 offset-1">
+  <div class="fw-semibold fs-4 mb-3">Log in</div>
+  <div class="text-danger my-2">Sorry, wrong password!</div>
+  <form>
+      <div class="row mb-2">
+          <label for="input_4" class="col-3 col-form-label">Login</label>
+          <div class="col-5">
+              <input type="text" class="form-control" id="input_4">
+          </div>
+      </div>
+      <div class="row mb-3">
+          <label for="input_5" class="col-3 col-form-label">Password</label>
+          <div class="col-5">
+              <input type="password" class="form-control" id="input_5">
+          </div>
+      </div>
+      <button type="submit" class="btn btn-outline-primary col-lg-2 offset-3">Log in!</button>
+  </form>
+</section>
+
+{% endblock %}

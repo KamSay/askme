@@ -23,9 +23,16 @@
   border-color: #00000040;
 }
 
+.u-break {
+    overflow-wrap: anywhere
+}
+
+.d-grid > div:last-child {
+  min-width: 0;
+}
 
 .stretched-link {
-  text-decoration: none; 
+  text-decoration: none;
   color: inherit;
   font-weight: 500;
   font-size: 18px;
@@ -42,4 +49,8 @@
 .pagination .page-link {
   padding-left: 1.3rem;
   padding-right: 1.3rem;
+}
+
+.tag_badge {
+    text-decoration: none;
 }
