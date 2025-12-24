@@ -1,0 +1,59 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+
+<section class="col-lg-8">
+
+{% include 'components/question_card.html' %}
+  <div class="row mt-5">
+    <form method="post">
+      {% csrf_token %}
+      <div class="row-lg-8">
+        <textarea class="form-control" placeholder="Input your answer" rows="3" name="text"></textarea>
+      </div>
+      {% if form.non_field_errors %}
+        <div class="text-danger my-2">
+          {{ form.non_field_errors.0 }}
+        </div>
+      {% endif %}
+
+      <div class="d-flex flex-row justify-content-end">
+        <button type="submit" class="btn btn-outline-primary mt-1">Answer</button>
+      </div>
+    </form>
+  </div>
+
+
+  {% for answer in answers %}
+  <article class="card mb-3 border-1 border-secondary mt-3">
+  <div class="card-body">
+    <div class="d-grid gap-3" style="grid-template-columns:70px 1fr;">
+      <div class="d-flex flex-column align-items-center justify-content-between pt-2">
+        <div class="mb-2 d-flex flex-column align-items-center">
+          <img src="{{ answer.author.profile.avatar.url }}" class="rounded-circle" width="32" height="32">
+          <div class="text-secondary">{{ answer.author.user.username }}</div>
+        </div>
+        <div class="votebox">
+          <button class="btn p-0">
+            <i class="bi bi-caret-up"></i>
+          </button>
+          <span>{{ answer.like_amount }}</span>
+          <button class="btn p-0">
+            <i class="bi bi-caret-down"></i>
+          </button>
+        </div>
+      </div>
+      <div class="d-flex flex-column align-items-center text-left">
+        <div class="position-relative">
+          <p class="text-secondary mb-3">{{ answer.text }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</article>
+  {% endfor %}
+
+  <div id="end"></div>
+</section>
+
+{% endblock %}
