@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+import os
+import time
 
 
 class LoginForm(forms.Form):
@@ -43,6 +45,15 @@ class RegistrationForm(forms.Form):
     password = forms.CharField()
     password_repeat = forms.CharField()
     avatar = forms.ImageField(required=False)
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar')
+        if not avatar:
+            return avatar
+
+        ext = os.path.splitext(avatar.name)[1]
+        avatar.name = f"{int(time.time())}{ext}"
+        return avatar
 
     def clean(self):
         cleaned_data = super().clean()
@@ -97,6 +108,15 @@ class SettingsForm(forms.Form):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar')
+        if not avatar:
+            return avatar
+
+        ext = os.path.splitext(avatar.name)[1]
+        avatar.name = f"{int(time.time())}{ext}"
+        return avatar
 
     def clean(self):
         cleaned_data = super().clean()
