@@ -7,6 +7,11 @@ import random
 
 from app.models import Profile, Question, QuestionLike, Answer, AnswerLike
 
+BATCH_SIZE = 1000
+MAX_LIKES = 500
+MAX_ANSWERS = 5
+MAX_TAGS = 20
+
 
 def random_datetime(start: datetime, end: datetime) -> datetime:
     delta = end - start
@@ -29,16 +34,17 @@ class Command(BaseCommand):
         ]
 
         profiles = []
-        User.objects.bulk_create(users, batch_size =1000)
+        User.objects.bulk_create(users, batch_size=BATCH_SIZE)
         for i, user in enumerate(users):
             profile = models.Profile(user=user)
             profiles.append(profile)
-        active_profiles = profiles[:1500]
-        Profile.objects.bulk_create(profiles, batch_size =1000)
+        Profile.objects.bulk_create(profiles, batch_size=BATCH_SIZE)
+
+        active_profiles = users[:1500]
 
 
         tags = []
-        for i in range(20):
+        for i in range(MAX_TAGS):
             tag = models.Tag(name=f'tag_{i}')
             tag.save()
             tags.append(tag)
@@ -55,14 +61,14 @@ class Command(BaseCommand):
             like_amount = 0
             answer_count = 0
             if random.random() < 0.05:
-                like_amount = random.randint(0, 500)
-                answer_count = random.randint(0, 5)
+                like_amount = random.randint(0, MAX_LIKES)
+                answer_count = random.randint(0, MAX_ANSWERS)
 
             created_date = random_datetime(datetime(2020, 12, 16),
                                                                   datetime(2025, 12, 16))
             question = models.Question(author=random.choice(active_profiles),
                                        title=f'question_{i}?',
-                                       text=f'qusetion_text_{i}',
+                                       text=f'question_text_{i}',
                                        created_at=created_date,
                                        like_amount=like_amount)
             questions.append(question)
@@ -87,22 +93,19 @@ class Command(BaseCommand):
 
 
             if len(questions) > 5000:
-                Question.objects.bulk_create(questions, batch_size=1000)
-                QuestionLike.objects.bulk_create(question_likes, batch_size=1000)
-                Answer.objects.bulk_create(answers, batch_size=1000)
-                AnswerLike.objects.bulk_create(answer_likes, batch_size=1000)
-                for question in questions:
-                    tag_amount = int(random.random() * 7)
-                    question.tags.set(random.sample(tags, tag_amount))
+                Question.objects.bulk_create(questions, batch_size=BATCH_SIZE)
+                QuestionLike.objects.bulk_create(question_likes, batch_size=BATCH_SIZE)
+                Answer.objects.bulk_create(answers, batch_size=BATCH_SIZE)
+                AnswerLike.objects.bulk_create(answer_likes, batch_size=BATCH_SIZE)
                 questions.clear()
                 question_likes.clear()
                 answers.clear()
                 answer_likes.clear()
 
-        Question.objects.bulk_create(questions, batch_size=1000)
-        QuestionLike.objects.bulk_create(question_likes, batch_size=1000)
-        Answer.objects.bulk_create(answers, batch_size=1000)
-        AnswerLike.objects.bulk_create(answer_likes, batch_size=1000)
+        Question.objects.bulk_create(questions, batch_size=BATCH_SIZE)
+        QuestionLike.objects.bulk_create(question_likes, batch_size=BATCH_SIZE)
+        Answer.objects.bulk_create(answers, batch_size=BATCH_SIZE)
+        AnswerLike.objects.bulk_create(answer_likes, batch_size=BATCH_SIZE)
 
         QuestionTag = Question.tags.through
         question_tags = []
@@ -111,5 +114,5 @@ class Command(BaseCommand):
             chosen_tags = random.sample(tags, tag_amount)
             for tag in chosen_tags:
                 question_tags.append(QuestionTag(question_id=question.id, tag_id=tag.id))
-        QuestionTag.objects.bulk_create(question_tags, batch_size=5000)
+        QuestionTag.objects.bulk_create(question_tags, batch_size=BATCH_SIZE)
 

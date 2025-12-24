@@ -3,12 +3,20 @@
 {% block content %}
 
 <section class="col-lg-8">
+
 {% include 'components/question_card.html' %}
   <div class="row mt-5">
-    <form>
+    <form method="post">
+      {% csrf_token %}
       <div class="row-lg-8">
-        <textarea class="form-control" placeholder="Input your answer" rows="3"></textarea>
+        <textarea class="form-control" placeholder="Input your answer" rows="3" name="text"></textarea>
       </div>
+      {% if form.non_field_errors %}
+        <div class="text-danger my-2">
+          {{ form.non_field_errors.0 }}
+        </div>
+      {% endif %}
+
       <div class="d-flex flex-row justify-content-end">
         <button type="submit" class="btn btn-outline-primary mt-1">Answer</button>
       </div>
@@ -22,7 +30,7 @@
     <div class="d-grid gap-3" style="grid-template-columns:70px 1fr;">
       <div class="d-flex flex-column align-items-center justify-content-between pt-2">
         <div class="mb-2 d-flex flex-column align-items-center">
-          <img src="{{ question.author.avatar.url }}" class="rounded-circle" width="32" height="32">
+          <img src="{{ answer.author.profile.avatar.url }}" class="rounded-circle" width="32" height="32">
           <div class="text-secondary">{{ answer.author.user.username }}</div>
         </div>
         <div class="votebox">
@@ -44,6 +52,8 @@
   </div>
 </article>
   {% endfor %}
+
+  <div id="end"></div>
 </section>
 
 {% endblock %}

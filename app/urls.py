@@ -1,4 +1,6 @@
 from django.urls import path
+
+from .models import Answer
 from .views import (
     AskView,
     IndexView,
@@ -9,6 +11,7 @@ from .views import (
     SettingsView,
     NewQuestionListView,
     HotQuestionListView,
+    LogoutView,
 )
 
 app_name = "app"
@@ -23,4 +26,5 @@ urlpatterns = [
     path("settings/", SettingsView.as_view(), name="settings"),
     path("new/", NewQuestionListView.as_view(), name="new"),
     path("hot/", HotQuestionListView.as_view(), name="hot"),
+    path("logout/", LogoutView.as_view(), name="logout")
 ]

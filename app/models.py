@@ -22,6 +22,11 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='avatars/gray.png')
 
+    def save(self, *args, **kwargs):
+        if not self.avatar:
+            self.avatar.name = 'avatars/gray.png'
+        super().save(*args, **kwargs)
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=40, unique=True)
@@ -30,9 +35,9 @@ class Tag(models.Model):
 class Question(models.Model):
     objects = QuestionQuerySet.as_manager()
 
-    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
-    text = models.TextField()
+    text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(Tag)
     like_amount = models.PositiveIntegerField(default=0, db_index=True)
@@ -45,15 +50,15 @@ class Question(models.Model):
 
 
 class Answer(models.Model):
-    author = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
-    text = models.TextField()
+    text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     like_amount = models.PositiveIntegerField(default=0, db_index=True)
 
 
 class QuestionLike(models.Model):
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, db_index=True)
 
     class Meta:
@@ -61,7 +66,7 @@ class QuestionLike(models.Model):
 
 
 class AnswerLike(models.Model):
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, db_index=True)
 
     class Meta:

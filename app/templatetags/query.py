@@ -12,9 +12,6 @@ def make_addr_add(context, name, value):
     if value not in values:
         values.append(value)
 
-    with open('/Users/jarvana/askme/app/log.txt', 'a') as file:
-        print(params, file=file)
-
     if values:
         params.setlist(name, values)
         return f'{reverse('app:tag')}?{urlencode(dict(params), doseq=True)}'
@@ -29,9 +26,6 @@ def make_addr_close(context, name, value):
     values = params.getlist(name)
     if value in values:
         values.remove(value)
-
-    with open('/Users/jarvana/askme/app/log.txt', 'a') as file:
-        print(params, file=file)
 
     if values:
         params.setlist(name, values)
