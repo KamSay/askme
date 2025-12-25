@@ -1,0 +1,34 @@
+{% extends 'components/base_card.html' %}
+
+{% block content %}
+<div class="d-grid gap-3" style="grid-template-columns:70px 1fr;">
+  <div class="d-flex flex-column align-items-start text-left">
+    <div class="position-relative">
+      <p class="text-secondary mb-3">{{ item.text }}</p>
+    </div>
+  </div>
+  <div class="d-flex justify-content-end">
+    <label class="cb">
+        {% if is_author %}
+            {% if answer.is_correct %}
+              <input class="js-correct"
+                     type="checkbox"
+                     data-url="{% url 'app:answer_correct' question.id answer.id %}"
+                      checked>
+            {% else %}
+              <input class="js-correct"
+                     type="checkbox"
+                     data-url="{% url 'app:answer_correct' question.id answer.id %}">
+            {% endif %}
+        {% else %}
+              <input class="js-correct"
+             type="checkbox"
+             data-url="{% url 'app:answer_correct' question.id answer.id %}"
+              checked disabled>
+        {% endif %}
+        <span></span>
+      </label>
+  </div>
+</div>
+
+{% endblock %}

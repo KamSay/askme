@@ -83,6 +83,14 @@ class AskForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
 
+        title = cleaned_data.get('title')
+        if not title:
+            raise forms.ValidationError("Title is empty")
+
+        text = cleaned_data.get('text')
+        if not text:
+            raise forms.ValidationError("Question is empty")
+
         tags = cleaned_data.get('tags')
         if tags:
             cleaned_data['tags'] = [t.strip() for t in tags.split(";") if t.strip()]

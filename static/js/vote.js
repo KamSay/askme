@@ -11,9 +11,11 @@ $(document).on("click", ".js-vote", function (e) {
   if ($wrap.data("voteBusy")) return;
   $wrap.data("voteBusy", true);
 
+   const url = $wrap.data("vote-url");
+
 
   $.ajax({
-    url: `/questions/${questionId}/vote/`,
+    url: url,
     method: "POST",
     dataType: "json",
     data: { type: voteType },
@@ -51,6 +53,39 @@ $(document).on("click", ".js-vote", function (e) {
 
     complete: function () {
       $wrap.data("voteBusy", false);
+    }
+  });
+});
+
+
+$(document).on("change", ".js-correct", function () {
+  const $cb = $(this);
+  const url = $cb.data("url");
+  const checked = $cb.is(":checked");
+
+  if ($cb.data("busy")) return;
+  $cb.data("busy", true);
+  $cb.prop("disabled", true);
+
+  $.ajax({
+    url: url,
+    method: "POST",
+    dataType: "json",
+    data: { is_correct: checked ? "true" : "false" },
+
+    success: function (resp) {
+      if (!(resp && resp.ok)) {
+        $cb.prop("checked", !checked);
+      }
+    },
+
+    error: function () {
+      $cb.prop("checked", !checked);
+    },
+
+    complete: function () {
+      $cb.prop("disabled", false);
+      $cb.data("busy", false);
     }
   });
 });

@@ -89,7 +89,7 @@ class Command(BaseCommand):
 
                 profiles = random.sample(active_profiles, like_amount)
                 for j in range(like_amount):
-                    answer_likes.append(models.AnswerLike(user=profiles[j], answer=answer))
+                    answer_likes.append(models.AnswerLike(user=profiles[j], answer=answer, value=1))
 
 
             if len(questions) > 5000:

@@ -19,7 +19,9 @@
         {% block search %}
         {% endblock %}
 
-        {% for question in questions %}{% include 'components/question_card.html' %}
+        {% for question in questions %}
+          {% url 'app:question_vote' question.id as vote_url %}
+          {% include 'components/question_card.html' with item=question vote_url=vote_url %}
         {% endfor %}
 
         {% if is_paginated %}

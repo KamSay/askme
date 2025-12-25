@@ -70,3 +70,23 @@ button.btn.js-vote:disabled i {
   opacity: 1 !important;
   color: inherit !important;
 }
+
+.cb input {
+    position:absolute;
+    opacity:0
+}
+
+.cb span {
+    width:36px;
+    height:36px;
+    display:inline-block;
+    border:1.5px solid #31B73A;
+    border-radius:3px;
+    box-sizing:border-box;
+    cursor:pointer;
+}
+
+.cb input:checked+span{
+    background: #31B73A;
+}
+

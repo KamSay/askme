@@ -12,7 +12,9 @@ from .views import (
     NewQuestionListView,
     HotQuestionListView,
     LogoutView,
-    QuestionVoteView
+    QuestionVoteView,
+    AnswerVoteView,
+    AnswerCorrectView,
 )
 
 app_name = "app"
@@ -29,4 +31,6 @@ urlpatterns = [
     path("hot/", HotQuestionListView.as_view(), name="hot"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("questions/<int:question_id>/vote/", QuestionVoteView.as_view(), name="question_vote"),
+    path("answers/<int:answer_id>/vote/", AnswerVoteView.as_view(), name="answer_vote"),
+    path("questions/<int:question_id>/answers/<int:answer_id>/correct/", AnswerCorrectView.as_view(), name="answer_correct")
 ]

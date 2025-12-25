@@ -55,6 +55,7 @@ class Answer(models.Model):
     text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     like_amount = models.PositiveIntegerField(default=0, db_index=True)
+    is_correct = models.BooleanField(default=False)
 
 
 class QuestionLike(models.Model):
@@ -72,8 +73,14 @@ class QuestionLike(models.Model):
 
 
 class AnswerLike(models.Model):
+    VOTE_TYPES = (
+        (1, "Like"),
+        (-1, "Dislike"),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, db_index=True)
+    value = models.SmallIntegerField(choices=VOTE_TYPES)
 
     class Meta:
         unique_together = ('user', 'answer')

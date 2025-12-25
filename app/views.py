@@ -4,16 +4,14 @@ from urllib.parse import urlencode
 
 from django.views.generic import TemplateView, DetailView, View
 
-from .models import Question, Profile, Tag, Answer, QuestionLike
+from .models import Question, Profile, Tag, Answer, QuestionLike, AnswerLike
 from app.util import get_paginator_range
 from django.views.generic import ListView
 from .forms import LoginForm, RegistrationForm, AskForm, SettingsForm, AnswerForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
-from django.db.models.functions import Coalesce
 from django.shortcuts import redirect, get_object_or_404
-from django.db import models
 
 
 PAGINATOR_MAX_LENGTH = 5
@@ -51,6 +49,7 @@ class BaseQuestionListView(ListView):
 
         for q in questions:
             q.user_vote = votes.get(q.id)  # 1 / -1 / None
+            q.user_is_author = (q.author.pk == self.request.user.pk)
 
         context["questions"] = questions
         return context
@@ -66,7 +65,7 @@ class HotQuestionListView(BaseQuestionListView):
         return Question.objects.hot()
 
 
-class AskView(TemplateView):
+class AskView(LoginRequiredMixin, TemplateView):
     template_name = "app/ask.html"
 
     def get(self, request, *args, **kwargs):
@@ -149,9 +148,26 @@ class QuestionView(DetailView):
         context = super().get_context_data(**kwargs)
 
         question = self.object
-        context["answers"] = question.answers.all()
+        answers = question.answers.all()
         context["question"] = question
         context.setdefault("form", AnswerForm())
+
+
+        if self.request.user.is_authenticated and answers:
+            aids = [a.id for a in answers]
+            votes = dict(
+                AnswerLike.objects
+                .filter(user=self.request.user, answer_id__in=aids)
+                .values_list("answer_id", "value")  # value: 1 / -1
+            )
+        else:
+            votes = {}
+
+        for a in answers:
+            a.user_vote = votes.get(a.id)  # 1 / -1 / None
+            a.user_is_author = (a.author.pk == self.request.user.pk)
+
+        context["answers"] = answers
 
         user_vote = None
         if self.request.user.is_authenticated:
@@ -163,11 +179,15 @@ class QuestionView(DetailView):
             )
 
         question.user_vote = user_vote  # 1 / -1
+        question.user_is_author = (question.author.pk == self.request.user.pk)
         return context
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         form = AnswerForm(request.POST)
+
+        if not request.user.is_authenticated:
+            return redirect('app:login')
 
         if form.is_valid():
             Answer.objects.create(
@@ -208,7 +228,7 @@ class RegistrationView(TemplateView):
         return self.render_to_response(self.get_context_data(form=form))
 
 
-class SettingsView(TemplateView):
+class SettingsView(LoginRequiredMixin, TemplateView):
     template_name = 'app/settings.html'
 
     def get(self, request, *args, **kwargs):
@@ -271,3 +291,59 @@ class QuestionVoteView(LoginRequiredMixin, View):
         question.save(update_fields=["like_amount"])
 
         return JsonResponse({"ok": True, "rating": question.like_amount, "user_vote": value})
+
+
+class AnswerVoteView(LoginRequiredMixin, View):
+    def post(self, request, answer_id: int):
+        answer = get_object_or_404(Answer, pk=answer_id)
+        vote_type = request.POST.get("type")
+        if vote_type == "like":
+            value = 1
+        elif vote_type == "dislike":
+            value = -1
+        else:
+            return JsonResponse({"ok": False}, status=400)
+
+        vote, created = AnswerLike.objects.get_or_create(
+            user=request.user,
+            answer=answer,
+            defaults={"value": value},
+        )
+
+        diff = value
+        if not created:
+            if vote.value != value:
+                diff = value - vote.value
+                vote.value = value
+                vote.save(update_fields=["value"])
+            else:
+                diff = -value
+                value = None
+                vote.delete()
+
+        answer.like_amount = answer.like_amount + diff
+        answer.save(update_fields=["like_amount"])
+
+        return JsonResponse({"ok": True, "rating": answer.like_amount, "user_vote": value})
+
+
+class AnswerCorrectView(LoginRequiredMixin, View):
+    def post(self, request, question_id: int, answer_id: int):
+        question = get_object_or_404(Question, pk=question_id)
+        answer = get_object_or_404(Answer, pk=answer_id, question_id=question.id)
+
+        if question.author_id != request.user.id:
+            return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+
+        is_correct = request.POST.get("is_correct")
+
+        if is_correct == "true":
+            answer.is_correct = True
+            answer.save(update_fields=["is_correct"])
+            return JsonResponse({"ok": True})
+        elif is_correct == "false":
+            answer.is_correct = False
+            answer.save(update_fields=["is_correct"])
+            return JsonResponse({"ok": True})
+        else:
+            return JsonResponse({"ok": False, "error": "bad_request"}, status=400)
