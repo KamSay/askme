@@ -40,7 +40,7 @@ class Question(models.Model):
     text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(Tag)
-    like_amount = models.PositiveIntegerField(default=0, db_index=True)
+    like_amount = models.IntegerField(default=0, db_index=True)
 
     def build_path(self):
         params = dict(self.request.GET.copy())
@@ -58,11 +58,17 @@ class Answer(models.Model):
 
 
 class QuestionLike(models.Model):
+    VOTE_TYPES = (
+        (1, "Like"),
+        (-1, "Dislike"),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, db_index=True)
+    value = models.SmallIntegerField(choices=VOTE_TYPES)
 
     class Meta:
-        unique_together = ('user', 'question')
+        unique_together = ("user", "question")
 
 
 class AnswerLike(models.Model):
@@ -71,5 +77,3 @@ class AnswerLike(models.Model):
 
     class Meta:
         unique_together = ('user', 'answer')
-
-

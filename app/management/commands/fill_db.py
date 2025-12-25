@@ -76,7 +76,7 @@ class Command(BaseCommand):
             profiles = random.sample(active_profiles, like_amount)
             for j in range(like_amount):
                 question_likes.append(models.QuestionLike(user=profiles[j],
-                                    question=question))
+                                    question=question, value=1))
             for j in range(answer_count):
                 like_amount = int(random.random() * min(ratio, 100))
                 answer = models.Answer(author=random.choice(active_profiles),

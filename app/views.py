@@ -1,15 +1,19 @@
+from django.http import JsonResponse
 from django.urls import reverse
 from urllib.parse import urlencode
 
 from django.views.generic import TemplateView, DetailView, View
 
-from .models import Question, Profile, Tag, Answer
+from .models import Question, Profile, Tag, Answer, QuestionLike
 from app.util import get_paginator_range
 from django.views.generic import ListView
 from .forms import LoginForm, RegistrationForm, AskForm, SettingsForm, AnswerForm
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
+from django.db.models.functions import Coalesce
 from django.shortcuts import redirect, get_object_or_404
+from django.db import models
 
 
 PAGINATOR_MAX_LENGTH = 5
@@ -27,10 +31,28 @@ class BaseQuestionListView(ListView):
         total_pages = context['paginator'].num_pages
         context['paginator_range'] = get_paginator_range(PAGINATOR_MAX_LENGTH, current_page, total_pages)
 
+
         params = dict(self.request.GET.copy())
         if 'page' in params:
             params.pop('page')
         context['url_params'] = urlencode(params, doseq=True)
+
+        questions = list(context["page_obj"].object_list)
+
+        if self.request.user.is_authenticated and questions:
+            qids = [q.id for q in questions]
+            votes = dict(
+                QuestionLike.objects
+                .filter(user=self.request.user, question_id__in=qids)
+                .values_list("question_id", "value")  # value: 1 / -1
+            )
+        else:
+            votes = {}
+
+        for q in questions:
+            q.user_vote = votes.get(q.id)  # 1 / -1 / None
+
+        context["questions"] = questions
         return context
 
 
@@ -125,8 +147,22 @@ class QuestionView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["answers"] = self.object.answers.all()
+
+        question = self.object
+        context["answers"] = question.answers.all()
+        context["question"] = question
         context.setdefault("form", AnswerForm())
+
+        user_vote = None
+        if self.request.user.is_authenticated:
+            user_vote = (
+                QuestionLike.objects
+                .filter(user=self.request.user, question=question)
+                .values_list("value", flat=True)
+                .first()
+            )
+
+        question.user_vote = user_vote  # 1 / -1
         return context
 
     def post(self, request, *args, **kwargs):
@@ -166,7 +202,6 @@ class RegistrationView(TemplateView):
                 user=user,
                 avatar=form.cleaned_data['avatar'],
             )
-            print('----------------', form.cleaned_data['avatar'])
             login(request, user)
             return redirect("/")
 
@@ -181,7 +216,6 @@ class SettingsView(TemplateView):
         return self.render_to_response(self.get_context_data(form=form))
 
     def post(self, request, *args, **kwargs):
-        print('------------', request.user.profile.avatar)
         form = SettingsForm(request.POST, request.FILES, user=request.user)
 
         if form.is_valid():
@@ -198,7 +232,42 @@ class SettingsView(TemplateView):
 
         return self.render_to_response(self.get_context_data(form=form))
 
+
 class LogoutView(View):
     def get(self, request, *args, **kwargs):
         logout(request)
         return redirect("/")
+
+
+class QuestionVoteView(LoginRequiredMixin, View):
+    def post(self, request, question_id: int):
+        question = get_object_or_404(Question, pk=question_id)
+        vote_type = request.POST.get("type")
+        if vote_type == "like":
+            value = 1
+        elif vote_type == "dislike":
+            value = -1
+        else:
+            return JsonResponse({"ok": False}, status=400)
+
+        vote, created = QuestionLike.objects.get_or_create(
+            user=request.user,
+            question=question,
+            defaults={"value": value},
+        )
+
+        diff = value
+        if not created:
+            if vote.value != value:
+                diff = value - vote.value
+                vote.value = value
+                vote.save(update_fields=["value"])
+            else:
+                diff = -value
+                value = None
+                vote.delete()
+
+        question.like_amount = question.like_amount + diff
+        question.save(update_fields=["like_amount"])
+
+        return JsonResponse({"ok": True, "rating": question.like_amount, "user_vote": value})
