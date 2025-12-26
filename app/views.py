@@ -301,6 +301,8 @@ class QuestionVoteView(LoginRequiredMixin, View):
         )
         question.refresh_from_db(fields=['like_amount'])
 
+        Profile.objects.filter(pk=question.author.pk).update(rating = F('rating') + diff)
+
         return JsonResponse({"ok": True, "rating": question.like_amount, "user_vote": value})
 
 
@@ -336,7 +338,9 @@ class AnswerVoteView(LoginRequiredMixin, View):
         Answer.objects.filter(pk=answer.pk).update(
             like_amount=F('like_amount') + diff
         )
+        answer.refresh_from_db(fields=['like_amount'])
 
+        Profile.objects.filter(pk=answer.author.pk).update(rating=F('rating') + diff)
 
         return JsonResponse({"ok": True, "rating": answer.like_amount, "user_vote": value})
 
