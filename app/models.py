@@ -18,9 +18,17 @@ class QuestionQuerySet(models.QuerySet):
         return qs
 
 
+class ProfileQuerySet(models.QuerySet):
+    def top(self, x):
+        return self.order_by('-rating')[:x]
+
+
 class Profile(models.Model):
+    objects = ProfileQuerySet.as_manager()
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='avatars/gray.png')
+    rating = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
         if not self.avatar:

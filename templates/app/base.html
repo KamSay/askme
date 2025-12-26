@@ -81,14 +81,6 @@
         <div class="card-body">
           <h3 class="h5">Popular Tags</h3>
           <div class="d-flex flex-wrap gap-2 mt-3">
-            <a href="#" class="link-secondary">perl</a>
-            <a href="#" class="fw-bold link-warning">python</a>
-            <a href="#" class="link-secondary">TechnoPark</a>
-            <a href="#" class="fw-bold link-danger">MySQL</a>
-            <a href="#" class="link-secondary">django</a>
-            <a href="#" class="link-secondary">Mail.Ru</a>
-            <a href="#" class="link-secondary">Voloshin</a>
-            <a href="#" class="link-secondary">Firefox</a>
           </div>
         </div>
       </div>
@@ -96,15 +88,25 @@
       <div class="card border-0">
         <div class="card-body">
           <h3 class="h5">Best Members</h3>
+
           <ul class="list-group list-group-flush mt-3">
-            <li class="list-group-item px-0"><a href="#">Mr. Freeman</a></li>
-            <li class="list-group-item px-0"><a href="#">Dr. House</a></li>
-            <li class="list-group-item px-0"><a href="#">Bender</a></li>
-            <li class="list-group-item px-0"><a href="#">Queen Victoria</a></li>
-            <li class="list-group-item px-0"><a href="#">V. Pupkin</a></li>
+            {% for p in top_profiles %}
+              <li class="list-group-item px-0 d-flex align-items-center">
+                <img
+                  src="{{ p.avatar.url }}"
+                  alt="Avatar"
+                  class="rounded-circle me-2"
+                  width="28"
+                  height="28"
+                >
+                <span>{{ p.user.username }}</span>
+
+              </li>
+            {% endfor %}
           </ul>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -129,16 +131,25 @@
     <div class="card border-0">
       <div class="card-body">
         <h3 class="h5">Best Members</h3>
+
         <ul class="list-group list-group-flush mt-3">
-          <li class="list-group-item px-0"><a href="#">Mr. Freeman</a></li>
-          <li class="list-group-item px-0"><a href="#">Dr. House</a></li>
-          <li class="list-group-item px-0"><a href="#">Bender</a></li>
-          <li class="list-group-item px-0"><a href="#">Queen Victoria</a></li>
-          <li class="list-group-item px-0"><a href="#">V. Pupkin</a></li>
+          {% for p in top_profiles %}
+            <li class="list-group-item px-0 d-flex align-items-center">
+              <img
+                src="{{ p.avatar.url }}"
+                alt="Avatar"
+                class="rounded-circle me-2"
+                width="28"
+                height="28"
+              >
+              <span>{{ p.user.username }}</span>
+              <span class="ms-auto">{{ p.rating }}</span>
+            </li>
+          {% endfor %}
         </ul>
       </div>
     </div>
-  </div>
+
 </aside>
     </div>
   </main>

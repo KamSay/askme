@@ -38,7 +38,6 @@ class Command(BaseCommand):
         for i, user in enumerate(users):
             profile = models.Profile(user=user)
             profiles.append(profile)
-        Profile.objects.bulk_create(profiles, batch_size=BATCH_SIZE)
 
         active_profiles = users[:1500]
 
@@ -66,20 +65,24 @@ class Command(BaseCommand):
 
             created_date = random_datetime(datetime(2020, 12, 16),
                                                                   datetime(2025, 12, 16))
-            question = models.Question(author=random.choice(active_profiles),
+            author = random.choice(active_profiles)
+            author.profile.rating += like_amount
+            question = models.Question(author=author,
                                        title=f'question_{i}?',
                                        text=f'question_text_{i}',
                                        created_at=created_date,
                                        like_amount=like_amount)
             questions.append(question)
 
-            profiles = random.sample(active_profiles, like_amount)
+            profiles_1 = random.sample(active_profiles, like_amount)
             for j in range(like_amount):
-                question_likes.append(models.QuestionLike(user=profiles[j],
+                question_likes.append(models.QuestionLike(user=profiles_1[j],
                                     question=question, value=1))
             for j in range(answer_count):
                 like_amount = int(random.random() * min(ratio, 100))
-                answer = models.Answer(author=random.choice(active_profiles),
+                author = random.choice(active_profiles)
+                author.profile.rating += like_amount
+                answer = models.Answer(author=author,
                                        question=question,
                                        text=f'answer_{j}',
                                        created_at=random_datetime(created_date,
@@ -87,9 +90,9 @@ class Command(BaseCommand):
                                        like_amount=like_amount)
                 answers.append(answer)
 
-                profiles = random.sample(active_profiles, like_amount)
+                profiles_1 = random.sample(active_profiles, like_amount)
                 for j in range(like_amount):
-                    answer_likes.append(models.AnswerLike(user=profiles[j], answer=answer, value=1))
+                    answer_likes.append(models.AnswerLike(user=profiles_1[j], answer=answer, value=1))
 
 
             if len(questions) > 5000:
@@ -106,6 +109,8 @@ class Command(BaseCommand):
         QuestionLike.objects.bulk_create(question_likes, batch_size=BATCH_SIZE)
         Answer.objects.bulk_create(answers, batch_size=BATCH_SIZE)
         AnswerLike.objects.bulk_create(answer_likes, batch_size=BATCH_SIZE)
+        print(len(profiles))
+        Profile.objects.bulk_create(profiles, batch_size=BATCH_SIZE)
 
         QuestionTag = Question.tags.through
         question_tags = []

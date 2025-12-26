@@ -1,3 +1,7 @@
+from idlelib.pyparse import trans
+
+from django.db import transaction
+from django.db.models import F
 from django.http import JsonResponse
 from django.urls import reverse
 from urllib.parse import urlencode
@@ -52,6 +56,9 @@ class BaseQuestionListView(ListView):
             q.user_is_author = (q.author.pk == self.request.user.pk)
 
         context["questions"] = questions
+        context["top_profiles"] = Profile.objects.top(5)
+        for p in context["top_profiles"]:
+            print(p.user.username, p.rating)
         return context
 
 
@@ -260,6 +267,7 @@ class LogoutView(View):
 
 
 class QuestionVoteView(LoginRequiredMixin, View):
+    @transaction.atomic
     def post(self, request, question_id: int):
         question = get_object_or_404(Question, pk=question_id)
         vote_type = request.POST.get("type")
@@ -287,13 +295,17 @@ class QuestionVoteView(LoginRequiredMixin, View):
                 value = None
                 vote.delete()
 
-        question.like_amount = question.like_amount + diff
-        question.save(update_fields=["like_amount"])
+
+        Question.objects.filter(pk=question.pk).update(
+            like_amount = F('like_amount') + diff
+        )
+        question.refresh_from_db(fields=['like_amount'])
 
         return JsonResponse({"ok": True, "rating": question.like_amount, "user_vote": value})
 
 
 class AnswerVoteView(LoginRequiredMixin, View):
+    @transaction.atomic
     def post(self, request, answer_id: int):
         answer = get_object_or_404(Answer, pk=answer_id)
         vote_type = request.POST.get("type")
@@ -311,7 +323,6 @@ class AnswerVoteView(LoginRequiredMixin, View):
         )
 
         diff = value
-        print(answer.like_amount, value)
         if not created:
             if vote.value != value:
                 diff = value - vote.value
@@ -322,8 +333,10 @@ class AnswerVoteView(LoginRequiredMixin, View):
                 value = None
                 vote.delete()
 
-        answer.like_amount = answer.like_amount + diff
-        answer.save(update_fields=["like_amount"])
+        Answer.objects.filter(pk=answer.pk).update(
+            like_amount=F('like_amount') + diff
+        )
+
 
         return JsonResponse({"ok": True, "rating": answer.like_amount, "user_vote": value})
 
