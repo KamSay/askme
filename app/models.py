@@ -54,7 +54,7 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
-    like_amount = models.PositiveIntegerField(default=0, db_index=True)
+    like_amount = models.IntegerField(default=0, db_index=True)
     is_correct = models.BooleanField(default=False)
 
 

@@ -20,7 +20,7 @@
                      type="checkbox"
                      data-url="{% url 'app:answer_correct' question.id answer.id %}">
             {% endif %}
-        {% else %}
+        {% elif answer.is_correct %}
               <input class="js-correct"
              type="checkbox"
              data-url="{% url 'app:answer_correct' question.id answer.id %}"

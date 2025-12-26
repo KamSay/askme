@@ -311,6 +311,7 @@ class AnswerVoteView(LoginRequiredMixin, View):
         )
 
         diff = value
+        print(answer.like_amount, value)
         if not created:
             if vote.value != value:
                 diff = value - vote.value
