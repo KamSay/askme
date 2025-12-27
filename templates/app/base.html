@@ -116,14 +116,14 @@
       <div class="card-body">
         <h3 class="h5">Popular Tags</h3>
         <div class="d-flex flex-wrap gap-2 mt-3">
-          <a href="#" class="link-secondary">perl</a>
-          <a href="#" class="fw-bold link-warning">python</a>
-          <a href="#" class="link-secondary">TechnoPark</a>
-          <a href="#" class="fw-bold link-danger">MySQL</a>
-          <a href="#" class="link-secondary">django</a>
-          <a href="#" class="link-secondary">Mail.Ru</a>
-          <a href="#" class="link-secondary">Voloshin</a>
-          <a href="#" class="link-secondary">Firefox</a>
+          {% include 'components/tag_badge.html' with tag='perl' %}
+          {% include 'components/tag_badge.html' with tag='python' %}
+          {% include 'components/tag_badge.html' with tag='TechnoPark' %}
+          {% include 'components/tag_badge.html' with tag='MySQL' %}
+          {% include 'components/tag_badge.html' with tag='django' %}
+          {% include 'components/tag_badge.html' with tag='Mail.Ru' %}
+          {% include 'components/tag_badge.html' with tag='Voloshin' %}
+          {% include 'components/tag_badge.html' with tag='Firefox' %}
         </div>
       </div>
     </div>
