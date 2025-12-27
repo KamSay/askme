@@ -272,77 +272,81 @@ class LogoutView(View):
         return redirect("/")
 
 
-class QuestionVoteView(LoginRequiredMixin, View):
+class VoteMixin:
+    def _vote(
+        self,
+        request,
+        target,              # Question или Answer (экземпляр)
+        target_model,        # Question или Answer (класс)
+        like_model,          # QuestionLike или AnswerLike (класс)
+        target_fk_field,     # "question" или "answer"
+    ):
+        vote_type = request.POST.get("type")
+        if vote_type == "like":
+            value = 1
+        elif vote_type == "dislike":
+            value = -1
+        else:
+            return JsonResponse({"ok": False}, status=400)
+
+        vote, created = like_model.objects.get_or_create(
+            user=request.user,
+            defaults={"value": value},
+            **{target_fk_field: target},
+        )
+
+        diff = value
+        user_vote = value
+
+        if not created:
+            if vote.value != value:
+                diff = value - vote.value
+                vote.value = value
+                vote.save(update_fields=["value"])
+                user_vote = value
+            else:
+                diff = -value
+                user_vote = None
+                vote.delete()
+
+        target_model.objects.filter(pk=target.pk).update(
+            like_amount=F("like_amount") + diff
+        )
+        target.refresh_from_db(fields=["like_amount"])
+
+        Profile.objects.filter(pk=target.author.pk).update(
+            rating=F("rating") + diff
+        )
+
+        return JsonResponse(
+            {"ok": True, "rating": target.like_amount, "user_vote": user_vote}
+        )
+
+
+class QuestionVoteView(LoginRequiredMixin, VoteMixin, View):
     @transaction.atomic
     def post(self, request, question_id: int):
         question = get_object_or_404(Question, pk=question_id)
-        vote_type = request.POST.get("type")
-        if vote_type == "like":
-            value = 1
-        elif vote_type == "dislike":
-            value = -1
-        else:
-            return JsonResponse({"ok": False}, status=400)
-
-        vote, created = QuestionLike.objects.get_or_create(
-            user=request.user,
-            question=question,
-            defaults={"value": value},
+        return self._vote(
+            request,
+            target=question,
+            target_model=Question,
+            like_model=QuestionLike,
+            target_fk_field="question",
         )
 
-        diff = value
-        if not created:
-            if vote.value != value:
-                diff = value - vote.value
-                vote.value = value
-                vote.save(update_fields=["value"])
-            else:
-                diff = -value
-                value = None
-                vote.delete()
 
-        Question.objects.filter(pk=question.pk).update(like_amount = F('like_amount') + diff)
-        question.refresh_from_db(fields=['like_amount'])
-
-        Profile.objects.filter(pk=question.author.pk).update(rating = F('rating') + diff)
-
-        return JsonResponse({"ok": True, "rating": question.like_amount, "user_vote": value})
-
-
-class AnswerVoteView(LoginRequiredMixin, View):
+class AnswerVoteView(LoginRequiredMixin, VoteMixin, View):
     @transaction.atomic
     def post(self, request, answer_id: int):
         answer = get_object_or_404(Answer, pk=answer_id)
-        vote_type = request.POST.get("type")
-        if vote_type == "like":
-            value = 1
-        elif vote_type == "dislike":
-            value = -1
-        else:
-            return JsonResponse({"ok": False}, status=400)
-
-        vote, created = AnswerLike.objects.get_or_create(
-            user=request.user,
-            answer=answer,
-            defaults={"value": value},
+        return self._vote(
+            request,
+            target=answer,
+            target_model=Answer,
+            like_model=AnswerLike,
+            target_fk_field="answer",
         )
-
-        diff = value
-        if not created:
-            if vote.value != value:
-                diff = value - vote.value
-                vote.value = value
-                vote.save(update_fields=["value"])
-            else:
-                diff = -value
-                value = None
-                vote.delete()
-
-        Answer.objects.filter(pk=answer.pk).update(like_amount=F('like_amount') + diff)
-        answer.refresh_from_db(fields=['like_amount'])
-        Profile.objects.filter(pk=answer.author.pk).update(rating=F('rating') + diff)
-
-        return JsonResponse({"ok": True, "rating": answer.like_amount, "user_vote": value})
 
 
 class AnswerCorrectView(LoginRequiredMixin, View):
@@ -365,3 +369,5 @@ class AnswerCorrectView(LoginRequiredMixin, View):
             return JsonResponse({"ok": True})
         else:
             return JsonResponse({"ok": False, "error": "bad_request"}, status=400)
+
+
