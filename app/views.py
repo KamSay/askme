@@ -21,7 +21,16 @@ from django.shortcuts import redirect, get_object_or_404
 PAGINATOR_MAX_LENGTH = 5
 
 
-class BaseQuestionListView(ListView):
+class TopProfilesMixin:
+    top_profiles_count = 5
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["top_profiles"] = Profile.objects.top(self.top_profiles_count)
+        return context
+
+
+class BaseQuestionListView(TopProfilesMixin, ListView):
     model = Question
     template_name = 'app/index.html'
     context_object_name = 'questions'
@@ -56,7 +65,6 @@ class BaseQuestionListView(ListView):
             q.user_is_author = (q.author.pk == self.request.user.pk)
 
         context["questions"] = questions
-        context["top_profiles"] = Profile.objects.top(5)
         return context
 
 
@@ -145,7 +153,7 @@ class LoginView(TemplateView):
         ))
 
 
-class QuestionView(DetailView):
+class QuestionView(TopProfilesMixin, DetailView):
     model = Question
     template_name = "app/question.html"
 
