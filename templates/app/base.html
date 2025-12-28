@@ -116,17 +116,22 @@
       <div class="card-body">
         <h3 class="h5">Search by tag</h3>
 
-        <form class="position-relative flex-grow-1 me-5" role="search" style="max-width:800px;">
+        {% load query %}
+
+        <form method="get" class="position-relative flex-grow-1 me-5" role="search" style="max-width:800px;">
+          {% for t in tags %}
+            <input type="hidden" name="tag" value="{{ t }}">
+          {% endfor %}
+
           <input
             type="search"
             class="form-control ps-3 pe-5"
-            placeholder="Search">
-          <button
-            class="btn btn-primary position-absolute top-0 end-0 h-100 border-0 rounded-end rounded-start-0"
-            type="submit">
-          <i class="bi bi-plus">
-          </i>
-          </button>
+            placeholder="Search"
+            name="new_tag">
+
+            <button class="btn btn-primary position-absolute top-0 end-0 h-100 border-0 rounded-end rounded-start-0">
+            <i class="bi bi-plus"></i>
+            </button>
         </form>
 
         <div class="d-flex flex-wrap gap-2 mt-3">

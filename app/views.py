@@ -64,8 +64,28 @@ class BaseQuestionListView(TopProfilesMixin, ListView):
             q.user_vote = votes.get(q.id)  # 1 / -1 / None
             q.user_is_author = (q.author.pk == self.request.user.pk)
 
+        context['tags'] = self.request.GET.getlist('tag')
         context["questions"] = questions
         return context
+
+    def get(self, request, *args, **kwargs):
+        params = request.GET.copy()
+
+        response = super().get(request, *args, **kwargs)
+        base_url = reverse('app:tag')
+        new_tag = params.get('new_tag', '')
+
+
+        if new_tag:
+            params.appendlist('tag', new_tag)
+            del params['new_tag']
+            params['page'] = 1
+            print(params)
+            print(urlencode(dict(params), doseq=True))
+            return redirect(f'{base_url}?{urlencode(dict(params), doseq=True)}')
+        return response
+
+
 
 
 class NewQuestionListView(BaseQuestionListView):
@@ -369,5 +389,3 @@ class AnswerCorrectView(LoginRequiredMixin, View):
             return JsonResponse({"ok": True})
         else:
             return JsonResponse({"ok": False, "error": "bad_request"}, status=400)
-
-
