@@ -1,39 +1,26 @@
 $(document).on("click", ".js-vote", function (e) {
   e.preventDefault();
-  e.stopPropagation();
 
-  const $btn = $(this);
-  const $wrap = $btn.closest("[data-question-id]");
-  const questionId = $wrap.data("question-id");
-  const voteType = $btn.data("vote");
+  const $wrap = $(this).closest("[data-question-id]");
   const $rating = $wrap.find(".js-rating");
-
-  if ($wrap.data("voteBusy")) return;
-  $wrap.data("voteBusy", true);
-
-   const url = $wrap.data("vote-url");
-
+  const url = $wrap.data("vote-url");
+  const voteType = $(this).data("vote");
 
   $.ajax({
-    url: url,
+    url,
     method: "POST",
     dataType: "json",
     data: { type: voteType },
 
     success: function (resp) {
-      if (!(resp && resp.ok)) {
-        $wrap.find(".js-vote").prop("disabled", false);
-        return;
-      }
+      if (!resp?.ok) return;
 
       $rating.text(resp.rating);
 
-      const v = Number(resp.user_vote); // 1 или -1
+      const v = Number(resp.user_vote);
 
-      const $likeBtn = $wrap.find('.js-vote[data-vote="like"]');
-      const $dislikeBtn = $wrap.find('.js-vote[data-vote="dislike"]');
-      const $likeIcon = $likeBtn.find("i");
-      const $dislikeIcon = $dislikeBtn.find("i");
+      const $likeIcon = $wrap.find('.js-vote[data-vote="like"] i');
+      const $dislikeIcon = $wrap.find('.js-vote[data-vote="dislike"] i');
 
       if (v === 1) {
         $likeIcon.removeClass("bi-caret-up").addClass("bi-caret-up-fill");
@@ -46,37 +33,24 @@ $(document).on("click", ".js-vote", function (e) {
         $dislikeIcon.removeClass("bi-caret-down-fill").addClass("bi-caret-down");
       }
     },
-
-    error: function () {
-      $wrap.find(".js-vote").prop("disabled", false);
-    },
-
-    complete: function () {
-      $wrap.data("voteBusy", false);
-    }
   });
 });
-
 
 $(document).on("change", ".js-correct", function () {
   const $cb = $(this);
   const url = $cb.data("url");
   const checked = $cb.is(":checked");
 
-  if ($cb.data("busy")) return;
-  $cb.data("busy", true);
   $cb.prop("disabled", true);
 
   $.ajax({
-    url: url,
+    url,
     method: "POST",
     dataType: "json",
     data: { is_correct: checked ? "true" : "false" },
 
     success: function (resp) {
-      if (!(resp && resp.ok)) {
-        $cb.prop("checked", !checked);
-      }
+      if (!resp?.ok) $cb.prop("checked", !checked);
     },
 
     error: function () {
@@ -85,7 +59,6 @@ $(document).on("change", ".js-correct", function () {
 
     complete: function () {
       $cb.prop("disabled", false);
-      $cb.data("busy", false);
-    }
+    },
   });
 });
