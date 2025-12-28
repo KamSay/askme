@@ -261,7 +261,7 @@ class RegistrationView(TemplateView):
         return self.render_to_response(self.get_context_data(form=form))
 
 
-class SettingsView(LoginRequiredMixin, TemplateView):
+class SettingsView(LoginRequiredMixin, TopProfilesMixin, TemplateView):
     template_name = 'app/settings.html'
 
     def get(self, request, *args, **kwargs):
