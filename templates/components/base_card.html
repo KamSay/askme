@@ -1,0 +1,47 @@
+<article class="card mb-3 border-0">
+  <div class="card-body">
+    <div class="d-grid gap-3" style="grid-template-columns:70px 1fr;">
+      <div class="d-flex flex-column align-items-center justify-content-between pt-2">
+        <div class="mb-2 d-flex flex-column align-items-center" >
+          <img src="{{ item.author.profile.avatar.url }}" class="rounded-circle" width="32" height="32">
+          {% if item.user_is_author %}
+            <div class="fw-bold">{{ item.author.username }}</div>
+          {% else %}
+            <div class="text-secondary">{{ item.author.username }}</div>
+          {% endif %}
+        </div>
+
+        <div class="d-flex align-items-center gap-2 js-vote-widget" data-question-id="{{ item.id }}"
+        data-vote-url="{{ vote_url }}">
+
+          {% if item.user_vote == 1 %}
+            <button class="btn p-0 js-vote" type="button" data-vote="like">
+              <i class="bi bi-caret-up-fill"></i>
+            </button>
+          {% else %}
+              <button class="btn p-0 js-vote" type="button" data-vote="like">
+                <i class="bi bi-caret-up"></i>
+              </button>
+          {% endif %}
+
+          <span class="fs-6 js-rating">{{ item.like_amount }}</span>
+
+          {% if item.user_vote == -1 %}
+            <button class="btn p-0 js-vote" type="button" data-vote="dislike">
+              <i class="bi bi-caret-down-fill"></i>
+            </button>
+          {% else %}
+            <button class="btn p-0 js-vote" type="button" data-vote="dislike">
+              <i class="bi bi-caret-down"></i>
+            </button>
+          {% endif %}
+
+        </div>
+
+      </div>
+
+        {% block content %}
+        {% endblock %}
+    </div>
+  </div>
+</article>

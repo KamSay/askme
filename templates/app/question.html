@@ -1,0 +1,37 @@
+{% extends 'app/base.html' %}
+
+{% block content %}
+
+<section class="col-lg-8">
+
+
+  {% url 'app:question_vote' question.id as vote_url %}
+{% include 'components/question_card.html' with item=question vote_url=vote_url %}
+  <div class="row mt-5">
+    <form method="post">
+      {% csrf_token %}
+      <div class="row-lg-8">
+        <textarea class="form-control" placeholder="Input your answer" rows="3" name="text"></textarea>
+      </div>
+      {% if form.non_field_errors %}
+        <div class="text-danger my-2">
+          {{ form.non_field_errors.0 }}
+        </div>
+      {% endif %}
+
+      <div class="d-flex flex-row justify-content-end">
+        <button type="submit" class="btn btn-outline-primary mt-1">Answer</button>
+      </div>
+    </form>
+  </div>
+
+
+  {% for answer in answers %}
+  {% url 'app:answer_vote' answer.id as vote_url %}
+  {% include 'components/answer_card.html' with item=answer vote_url=vote_url is_author=question.user_is_author%}
+  {% endfor %}
+
+  <div id="end"></div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'app/base.html' %}
+{% block nav_user_info %}
+{% endblock %}
+
+{% block content %}
+
+      <section class="col-lg-8">
+      <div class="bg-white mb-3 rounded-3">
+        <div class="btn-group" role="group">
+          <a href="/new" class="btn btn-white filter-link my-1 ms-1 border-0 rounded-3">
+            <i class="bi bi-rocket me-1"></i>New questions
+          </a>
+          <a href="/hot" class="btn btn-white filter-link my-1 ms-1 border-0 rounded-3">
+            <i class="bi bi-fire me-1"></i>Hot questions
+          </a>
+        </div>
+      </div>
+
+        {% block search %}
+        {% endblock %}
+
+        {% for question in questions %}
+          {% url 'app:question_vote' question.id as vote_url %}
+          {% include 'components/question_card.html' with item=question vote_url=vote_url %}
+        {% endfor %}
+
+        {% if is_paginated %}
+          <nav>
+            <ul class="pagination mb-0 d-flex flex-row justify-content-center">
+              {% for num in paginator_range %}
+                  {% if num == page_obj.number %}
+                      <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                  {% else %}
+                      <li class="page-item"><a class="page-link" href="?{% if url_params %}{{ url_params }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                  {% endif %}
+              {% endfor %}
+            </ul>
+          </nav>
+        {% endif %}
+
+      </section>
+
+
+
+
+{% endblock %}
